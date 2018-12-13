@@ -5,7 +5,9 @@ open Fable.Import.Browser
 open PromiseImpl
 open Fable.Import.JS
 open Fetch
-open Fable.Import.TFJS
+open Fable.Core.JsInterop
+
+let tf : obj = importAll "@tensorflow/tfjs"
 
 
 [<Literal>]
@@ -91,6 +93,23 @@ let load =
         return ()
 }
 
+type TensorData = {
+    Tensors : obj //obj because of types not defined yet
+    Labels : obj //obje because of tyeps not defined yet
+}
 
 let getTrainData () =
-    0
+    let xs = tf?tensor4d(trainImages, [|trainImages.length / float ImageSize; float ImageHeight; float ImageWidth; 1. |])
+    let labels = tf?tensor2d(trainImages, [|trainLabels.length / float NumClasses; float NumClasses |])
+    {Tensors = xs; Labels = labels}
+
+let getTestData(numOfExamples : int option) =
+    let xs = tf?tensor4d(testImages, [|testImages.length / float ImageSize; float ImageHeight; float ImageWidth; 1. |])
+    let labels = tf?tensor2d(testLables, [|testLables.length / float NumClasses; float NumClasses|])
+
+    match numOfExamples with
+    | Some i ->
+        let xs' = xs?slice([|0.; 0.; 0.; 0.|], [|float i; float ImageHeight; float ImageWidth; float 1|])
+        let labels' = labels = xs?slice([|0.; 0.|], [|float i; float NumClasses|])
+        {Tensors = xs'; Labels = labels'}
+    | None -> {Tensors = xs; Labels = labels}
