@@ -71,16 +71,18 @@ module State =
             // more memory resources and aren't guaranteed to perform better.
             let batchSize = 320
             // Leave out the last 15% of the training data for validation, to monitor
-  // overfitting during training.
+            // overfitting during training.
             let validationSplit = 0.15
             // Get number of training epochs from the UI.
             let trainEpochs = model.Epochs
             // We'll keep a buffer of loss and accuracy values over time.
             let trainBatchCount = 0
-
             let trainData = getTrainData()
-            let testData = getTestData(None)
-            let totalNumBatches = Math.ceil(trainData.xs.shape.[0] * (1. - validationSplit) / (float batchSize)) * (float trainEpochs)
+            let testData = getTestData (None)
+            let totalNumBatches =
+                Math.ceil
+                    (trainData.xs.shape.[0] * (1. - validationSplit)
+                     / (float batchSize)) * (float trainEpochs)
             return ()
         }
 
