@@ -1,21 +1,16 @@
 namespace TrainingParameters
 
 open Fable.Core
+open CommonTypes
+
 
 module Types =
-    [<StringEnum>]
-    type ModelType =
-        | [<CompiledName("ConvNet")>] ConvNet
-        | [<CompiledName("DenseNet")>] DenseNet
-        static member FromString =
-            function
-            | "ConvNet" -> ConvNet
-            | "DenseNet" -> DenseNet
-            | _ -> ConvNet
+    
 
     type Model =
         { SelectedModeltype : ModelType
-          Epochs : int }
+          Epochs : int
+          IsDisabled : bool }
 
     type Msg =
         | EpoachChange of int
@@ -28,14 +23,15 @@ module State =
 
     let init() =
         { SelectedModeltype = ConvNet
-          Epochs = 3 }, Cmd.none
+          Epochs = 3
+          IsDisabled = false }, Cmd.none
 
     let update msg model =
         match msg with
         | EpoachChange i -> { model with Epochs = i }, Cmd.none
         | SelectedModelTypeChange m ->
             { model with SelectedModeltype = m }, Cmd.none
-        | LoadAndTrain -> model, Cmd.none //It will start trainign in another component
+        | LoadAndTrain -> { model with IsDisabled = true }, Cmd.none //It will start trainign in another component
 
 module View =
     open Elmish
@@ -53,6 +49,7 @@ module View =
                   [ label [] [ str "Model Type:" ]
 
                     select [ Id "model-type"
+                             Disabled model.IsDisabled
                              OnChange(fun ev ->
                                  ev.target?value
                                  |> ModelType.FromString
@@ -73,5 +70,6 @@ module View =
                                    |> dispatch) ] ]
 
               button [ Id "train"
+                       Disabled model.IsDisabled
                        OnClick(fun _ -> LoadAndTrain |> dispatch) ]
                   [ str "Load Data and Train Model" ] ]

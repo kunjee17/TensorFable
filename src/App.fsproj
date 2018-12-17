@@ -3,16 +3,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="imports/Fable.Import.TFJS.fs" />
-    <Compile Include="imports/Fable.Import.Tfjs.fs" />
+    <Compile Include="imports/Fable.Import.Tfjs.Types.fs" />
+    <Compile Include="imports/Fable.Import.Tfjs.Tensor.fs" />
     <Compile Include="TensorFlow/Data.fs" />
+    <Compile Include="TensorFlow/Helper.fs" />
+    <Compile Include="CommonTypes.fs" />
     <Compile Include="TfTitle.fs" />
     <Compile Include="Description.fs" />
     <Compile Include="TrainingProgress.fs" />
     <Compile Include="TrainingParameters.fs" />
     <Compile Include="InferenceExample.fs" />
     <Compile Include="App.fs" />
-    <Compile Include="imports/Fable.Import.TfjsCore.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fable.Core" Version="2.0.3" />

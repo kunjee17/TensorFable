@@ -13,20 +13,24 @@ type Model =
       TrainingProgress : TrainingProgress.Types.Model
       InferenceExample : InferenceExample.Types.Model }
 
-type Msg = TrainingParametersMsg of TrainingParameters.Types.Msg
+type Msg =
+    | TrainingParametersMsg of TrainingParameters.Types.Msg
+    | TrainingProgressMsg of TrainingProgress.Types.Msg
 
 let init() =
     let tfTitle = TfTitle.State.init()
     let description = Description.State.init()
     let trainingParameters, trainingParametersCmd =
         TrainingParameters.State.init()
-    let trainingProgress = TrainingProgress.State.init()
+    let trainingProgress, trainingProgressCmd = TrainingProgress.State.init()
     let inferenceExample = InferenceExample.State.init()
     { TfTitle = tfTitle
       Description = description
       TrainingParameters = trainingParameters
       TrainingProgress = trainingProgress
-      InferenceExample = inferenceExample }, Cmd.batch [ trainingParametersCmd ]
+      InferenceExample = inferenceExample },
+    Cmd.batch [ Cmd.map TrainingParametersMsg trainingParametersCmd
+                Cmd.map TrainingProgressMsg trainingProgressCmd ]
 
 // UPDATE
 let update (msg : Msg) (model : Model) =
@@ -34,8 +38,24 @@ let update (msg : Msg) (model : Model) =
     | TrainingParametersMsg m ->
         let trainingParameters, trainingParametersCmd =
             TrainingParameters.State.update m model.TrainingParameters
-        { model with TrainingParameters = trainingParameters },
-        Cmd.map TrainingParametersMsg trainingParametersCmd
+        let res, resCmd =
+            { model with TrainingParameters = trainingParameters },
+            Cmd.map TrainingParametersMsg trainingParametersCmd
+        match m with
+        | TrainingParameters.Types.Msg.LoadAndTrain ->
+            let pass =
+                TrainingProgress.Types.Msg.StartTraining
+                    (model.TrainingParameters.SelectedModeltype,
+                     model.TrainingParameters.Epochs)
+            res,
+            Cmd.batch [ resCmd
+                        Cmd.map TrainingProgressMsg (Cmd.ofMsg pass) ]
+        | _ -> res, resCmd
+    | TrainingProgressMsg m ->
+        let trainingProgress, trainingProgressCmd =
+            TrainingProgress.State.update m model.TrainingProgress
+        { model with TrainingProgress = trainingProgress },
+        Cmd.map TrainingProgressMsg trainingProgressCmd
 
 // VIEW (rendered with React)
 let view (model : Model) dispatch =
